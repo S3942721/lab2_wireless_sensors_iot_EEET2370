@@ -1,9 +1,13 @@
+#include <dht.h>
+dht DHT;
 #include <SPI.h>
 #include <RH_RF95.h>
 
+#define DHT11_PIN 5
 
 RH_RF95 rf95; // Create radio object
 float frequency = 917.60; // This frequency is for Group 2
+
 void setup() 
 {
   Serial.begin(9600); // 
@@ -30,7 +34,15 @@ void loop()
 {
   Serial.println("Sending message to LoRa Server");
   // Send a message to LoRa Server
-  uint8_t data[] = "Hello, This is RMIT Lab Group 2"; 
+
+  int chk = DHT.read11(DHT11_PIN);
+  Serial.print("Temperature = ");
+  Serial.println(DHT.temperature);
+  Serial.print("Humidity = ");
+  Serial.println(DHT.humidity);
+  delay(2000);
+  
+  uint8_t data[] = {(int8_t)DHT.temperature, (int8_t)DHT.humidity}; 
   rf95.send(data, sizeof(data));
   
   rf95.waitPacketSent();
