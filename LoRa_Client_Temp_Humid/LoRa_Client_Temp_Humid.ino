@@ -42,7 +42,7 @@ void loop()
   Serial.println(DHT.humidity);
   delay(2000);
   
-  uint8_t data[] = {(int8_t)DHT.temperature, (int8_t)DHT.humidity}; 
+  int8_t data[] = {(int8_t)DHT.temperature, (int8_t)DHT.humidity}; 
   rf95.send(data, sizeof(data));
   
   rf95.waitPacketSent();
