@@ -4,11 +4,13 @@
 #include <SPI.h>
 #include <RH_RF95.h>
 
+const int groupNumber = 2;
+
 // Singleton instance of the radio driver
 RH_RF95 rf95;
 
 int led = A2;
-float frequency = 916.0;
+float frequency = 917.6;
 
 void setup() 
 {
@@ -54,8 +56,15 @@ void loop()
       Console.println(rf95.lastRssi(), DEC);
       
       // Send a reply
-      uint8_t data[] = "And hello back to you Group 1";
-      rf95.send(data, sizeof(data));
+      //uint8_t data[] = "SAM And hello back to you Group N";
+      //data[sizeof(data)-2] = '0' + groupNumber;
+
+      //Better data
+     uint8_t data[100];
+     memset(data,0,sizeof(data));
+     sprintf(data,"SAM And hello back to you Group %i",groupNumber);
+       
+      rf95.send(data, strlen(data));
       rf95.waitPacketSent();
       Console.println("Sent a reply");
       digitalWrite(led, LOW);
@@ -66,5 +75,3 @@ void loop()
     }
   }
 }
-
-
