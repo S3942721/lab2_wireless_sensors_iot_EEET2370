@@ -55,10 +55,6 @@ void loop()
       Console.print("RSSI: ");
       Console.println(rf95.lastRssi(), DEC);
 
-      // Send a reply
-      //uint8_t data[] = "SAM And hello back to you Group N";
-      //data[sizeof(data)-2] = '0' + groupNumber;
-
       //Better data
       uint8_t data[100];
       memset(data,0,sizeof(data));
