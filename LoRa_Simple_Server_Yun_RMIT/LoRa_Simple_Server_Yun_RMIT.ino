@@ -62,7 +62,7 @@ void loop()
       //Better data
      uint8_t data[100];
      memset(data,0,sizeof(data));
-     sprintf(data,"SAM And hello back to you Group %i",groupNumber);
+     sprintf(data,"And hello back to you Group %i",groupNumber);
 
       rf95.send(data, strlen(data));
       rf95.waitPacketSent();
