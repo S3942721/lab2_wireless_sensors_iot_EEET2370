@@ -60,9 +60,9 @@ void loop()
       //data[sizeof(data)-2] = '0' + groupNumber;
 
       //Better data
-     uint8_t data[100];
-     memset(data,0,sizeof(data));
-     sprintf(data,"And hello back to you Group %i",groupNumber);
+      uint8_t data[100];
+      memset(data,0,sizeof(data));
+      sprintf(data,"And hello back to you Group %i",groupNumber);
 
       rf95.send(data, strlen(data));
       rf95.waitPacketSent();
