@@ -12,9 +12,9 @@ RH_RF95 rf95;
 int led = A2;
 float frequency = 917.6;
 
-void setup() 
+void setup()
 {
-  pinMode(led, OUTPUT);     
+  pinMode(led, OUTPUT);
   Bridge.begin(BAUDRATE);
   Console.begin();
   while (!Console) ; // Wait for console port to be available
@@ -25,16 +25,16 @@ void setup()
   rf95.setFrequency(frequency);
   // Setup Power,dBm
   rf95.setTxPower(3);
-  
+
   // Setup Spreading Factor (6 ~ 12)
   rf95.setSpreadingFactor(7);
-  
+
   // Setup BandWidth, option: 7800,10400,15600,20800,31200,41700,62500,125000,250000,500000
   rf95.setSignalBandwidth(125000);
-  
-  // Setup Coding Rate:5(4/5),6(4/6),7(4/7),8(4/8) 
+
+  // Setup Coding Rate:5(4/5),6(4/6),7(4/7),8(4/8)
   rf95.setCodingRate4(5);
-  
+
   Console.print("Listening on frequency: ");
   Console.println(frequency);
 }
@@ -43,7 +43,7 @@ void loop()
 {
   if (rf95.available())
   {
-    // Should be a message for us now   
+    // Should be a message for us now
     uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
     uint8_t len = sizeof(buf);
     if (rf95.recv(buf, &len))
@@ -61,7 +61,7 @@ void loop()
       }
 
       uint8_t reply[] = "OK";
-       
+
       rf95.send(reply, strlen(reply));
       rf95.waitPacketSent();
       Console.println("Sent a reply");

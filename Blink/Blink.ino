@@ -1,6 +1,6 @@
 /*
   Blink :
-  For LG01: Turn on/off the HEART LED on LG01, 
+  For LG01: Turn on/off the HEART LED on LG01,
 
   modified 8 May 2014
   by Edwin Chen <support@dragino.com>
