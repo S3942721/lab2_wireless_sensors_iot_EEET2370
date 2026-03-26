@@ -6,7 +6,7 @@ clear all
 close all
 %% Paramters
 par.CaptureDuration = 0.5;  % [seconds] This is the capture duration for the signla (make sure this is wider than your signal duration)
-par.fc   = 915e6;             % [Hz] set the center frequcny to your corresponding group
+par.fc   = 925e6;             % [Hz] set the center frequcny to your corresponding group
 par.fs   = 2e6;               % [sample/sec] Sampling rate
 par.Gain = 60;              % [dB] Amplifier gain
 par.PowerCalib = 0;        % for calibrating the power
