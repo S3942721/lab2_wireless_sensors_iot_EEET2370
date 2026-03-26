@@ -1,0 +1,180 @@
+function Decode_LoRa_Signal(matfile)
+%DECODE_LORA_SDR Decode a .mat LoRa SDR capture, demodulate LoRa and FSK,
+%plot spectrogram of FSK MSG, and display messages.
+%
+% Usage:
+%   decode_lora_sdr('capture.mat')
+%
+% The .mat file is expected to contain variables used by LoRa_Demodulate and
+% FSK_Demodulate. Typical variable names: rxSignal, Fs, centerFrequency, etc.
+% Adjust variable names below if your file uses different names.
+
+% Load .mat file
+S = load(matfile);
+
+% Try to find likely signal and sampling rate fields
+% Common names: rx, rxSignal, y, x, sig, CapturedSignal
+sigFields = {'rxSignal','rx','y','x','signal','s','CapturedSignal','capturedSignal'};
+fsFields = {'Fs','fs','fsamp','Fsamp','samplingRate','par','Par','params'};
+
+sig = [];
+Fs = [];
+
+for f = sigFields
+    if isfield(S, f{1})
+        sig = S.(f{1});
+        break
+    end
+end
+for f = fsFields
+    if isfield(S, f{1})
+        val = S.(f{1});
+        % If par/params structure, try to extract common sampling rate fields
+        if isstruct(val)
+            possible = {'Fs','fs','fsamp','samplingRate','Fsamp'};
+            for p = possible
+                if isfield(val, p{1})
+                    Fs = val.(p{1});
+                    break
+                end
+            end
+        else
+            Fs = val;
+        end
+        if ~isempty(Fs), break; end
+    end
+end
+
+if isempty(sig)
+    error('No signal variable found in the .mat file. Available fields: %s', strjoin(fieldnames(S),', '));
+end
+if isempty(Fs)
+    error('No sampling rate (Fs) found in the .mat file. Available fields: %s', strjoin(fieldnames(S),', '));
+end
+
+% Ensure column vector
+sig = sig(:);
+
+% Provide default parameters expected by the other functions
+% These defaults can be adjusted by editing below or by modifying calls.
+default_SF = 7;
+default_BW = 125e3;    % 125 kHz commonly used LoRa bandwidth
+default_PowerThreshold = 0.01;
+
+% 0) Optional: Crop signal using Pluto_Crop if available
+% Pluto_Crop signature: function [signal] = Pluto_Crop(x,Bandwidth,Fs,PowerThreshold)
+cropSig = [];
+if exist('Pluto_Crop','file') == 2
+    try
+        cropSig = Pluto_Crop(sig, default_BW, Fs, default_PowerThreshold);
+        if ~isempty(cropSig)
+            sig = cropSig(:);
+        end
+    catch
+        % If cropping fails, continue with original sig
+        warning('Pluto_Crop exists but failed. Continuing with full capture.');
+    end
+end
+
+% 1) Run LoRa_Demodulate
+% Desired signature: function [message] = LoRa_Demodulate(signal,SF,Bandwidth)
+loraMsg = [];
+try
+    loraMsg = LoRa_Demodulate(sig, default_SF, default_BW);
+catch
+    try
+        loraMsg = LoRa_Demodulate(sig, default_SF); % try without BW if implemented differently
+    catch ME
+        try
+            loraMsg = LoRa_Demodulate(sig); % last resort
+        catch ME2
+            warning('LoRa_Demodulate failed: %s', ME2.message);
+        end
+    end
+end
+
+if ~isempty(loraMsg)
+    fprintf('LoRa_Demodulate output:\n');
+    disp(loraMsg);
+else
+    warning('LoRa_Demodulate did not produce output or failed.');
+end
+
+% 2) Extract FSK MSG portion to plot spectrogram.
+fskSig = [];
+if isfield(S,'FSK_MSG'); fskSig = S.FSK_MSG; end
+if isempty(fskSig) && isfield(S,'fskSignal'); fskSig = S.fskSignal; end
+if isempty(fskSig) && isfield(S,'CapturedSignal') && isfield(S,'par')
+    % some captures store parameters and a captured signal struct
+    cs = S.CapturedSignal;
+    if isstruct(cs) && isfield(cs,'fsk')
+        fskSig = cs.fsk;
+    end
+end
+if isempty(fskSig)
+    fskSig = sig;
+    warning('No explicit FSK signal found in file. Using entire capture for spectrogram.');
+end
+
+% Ensure column
+fskSig = fskSig(:);
+
+% 2a) Plot spectrogram of FSK MSG (use short-time FFT)
+win = max(2, round(0.01*Fs)); % 10 ms window, at least length 2
+if mod(win,2)==1, win = win+1; end
+noverlap = round(0.9*win);
+nfft = max(512, 2^nextpow2(win));
+
+figure('Name','FSK MSG Spectrogram','NumberTitle','off');
+spectrogram(fskSig, hamming(win), noverlap, nfft, Fs, 'yaxis');
+title('Spectrogram of FSK MSG');
+ylim([0, 0.5]); % normalized to Nyquist (yaxis 'y' plots in normalized units when Fs provided)
+colorbar;
+
+% 3) Run FSK_Demodulate
+% Desired signature: function [symbols_message] = FSK_Demodulate(message,SF)
+fskMsg = [];
+try
+    fskMsg = FSK_Demodulate(fskSig, default_SF);
+catch
+    try
+        fskMsg = FSK_Demodulate(fskSig); % try without SF if implemented differently
+    catch ME
+        warning('FSK_Demodulate failed: %s', ME.message);
+    end
+end
+
+if ~isempty(fskMsg)
+    fprintf('FSK_Demodulate output:\n');
+    disp(fskMsg);
+else
+    warning('FSK_Demodulate did not produce output or failed.');
+end
+
+% 4) Run LoRa Decode (assume function LoRa_Decode)
+% Desired signature: function [symbols_out] = LoRa_Decode(symbols_in,SF)
+loraDecoded = [];
+try
+    if ~isempty(loraMsg)
+        loraDecoded = LoRa_Decode(loraMsg, default_SF);
+    elseif ~isempty(fskMsg)
+        loraDecoded = LoRa_Decode(fskMsg, default_SF);
+    else
+        loraDecoded = LoRa_Decode(sig, default_SF);
+    end
+catch
+    try
+        loraDecoded = LoRa_Decode(sig); % try fallback
+    catch ME
+        warning('LoRa_Decode failed: %s', ME.message);
+    end
+end
+
+if ~isempty(loraDecoded)
+    fprintf('LoRa Decode output:\n');
+    disp(loraDecoded);
+else
+    warning('LoRa_Decode did not produce output or failed.');
+end
+
+end
