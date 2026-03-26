@@ -3,7 +3,7 @@
 
 
 RH_RF95 rf95; // Create radio object
-float frequency = 917.60; // This frequency is for Group 2
+float frequency = 925.00; // This frequency has been assigned to Group 2
 void setup()
 {
   Serial.begin(9600); //
@@ -28,34 +28,35 @@ void setup()
 
 void loop()
 {
-  Serial.println("Sending message to LoRa Server");
+  Serial.println("Sending LoRa message");
   // Send a message to LoRa Server
-  uint8_t data[] = "Hello, This is RMIT Lab Group 2";
+  uint8_t data[] = "G02_SG_KG";
   rf95.send(data, sizeof(data));
 
   rf95.waitPacketSent();
-  // Now wait for a reply
-  uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
-  uint8_t len = sizeof(buf);
-
-  if (rf95.waitAvailableTimeout(3000))
-  {
-    // Should be a reply message for us now
-    if (rf95.recv(buf, &len))
-   {
-      Serial.print("got a reply: ");
-      Serial.println((char*)buf);
-      Serial.print("RSSI: ");
-      Serial.println(rf95.lastRssi(), DEC);
-    }
-    else
-    {
-      Serial.println("recv failed");
-    }
-  }
-  else
-  {
-    Serial.println("No reply, is LoRa server running?");
-  }
+  
+//  // Now wait for a reply
+//  uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
+//  uint8_t len = sizeof(buf);
+//
+//  if (rf95.waitAvailableTimeout(3000))
+//  {
+//    // Should be a reply message for us now
+//    if (rf95.recv(buf, &len))
+//    {
+//      Serial.print("got a reply: ");
+//      Serial.println((char*)buf);
+//      Serial.print("RSSI: ");
+//      Serial.println(rf95.lastRssi(), DEC);
+//    }
+//    else
+//    {
+//      Serial.println("recv failed");
+//    }
+//  }
+//  else
+//  {
+//    Serial.println("No reply, is LoRa server running?");
+//  }
   delay(5000);
 }
