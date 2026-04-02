@@ -8,8 +8,8 @@ par.PowerCalib = 0;        % for calibrating the power
 %% Load Signal
 load("LoRaCapture_Further400ms.mat", "CapturedSignal")
 
-startSignal = 50
-endSignal = 110
+startSignal = 50;
+endSignal = 110;
 
 signalSegment = CapturedSignal(startSignal:endSignal);
 
@@ -39,15 +39,16 @@ grid on
 BW = 125e3;           % 125 kHz
 Fs = par.fs;          % SDR sample rate
 Threshold = -30;      % Noise floor
-SF = 7                % Spreading factor
+SF = 7;               % Spreading factor
 
 CroppedLoRa = Pluto_Crop(CapturedSignal, BW, Fs, Threshold);
 
 %% PSD
 pwelch(CroppedSignal,256,0,[],par.fs,'centered')
 
-%pwelch(CapturedSignal,256,0,[],par.fs,'centered')
-
 %% Demodulate
-DemodulatedSignal = LoRa_Demodulate(CroppedLoRa,SF,BW)
+DemodulatedSignal = LoRa_Demodulate(CroppedLoRa,SF,BW);
 
+spectrogram(CroppedSignal, STFT_Window_Cropped, [], [], par.fs, 'yaxis', 'centered');
+
+%% 
