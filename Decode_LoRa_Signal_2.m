@@ -1,4 +1,11 @@
+%% Paramters
+par.CaptureDuration = 0.5;  % [seconds] This is the capture duration for the signla (make sure this is wider than your signal duration)
+par.fc   = 925e6;             % [Hz] set the center frequcny to your corresponding group
+par.fs   = 2e6;               % [sample/sec] Sampling rate
+par.Gain = 60;              % [dB] Amplifier gain
+par.PowerCalib = 0;        % for calibrating the power
 
+%% Load Signal
 load("LoRaCapture_Further400ms.mat", "CapturedSignal")
 
 startSignal = 50
@@ -32,6 +39,7 @@ grid on
 BW = 125e3;           % 125 kHz
 Fs = par.fs;          % SDR sample rate
 Threshold = -30;      % Noise floor
+SF = 7                % Spreading factor
 
 CroppedLoRa = Pluto_Crop(CapturedSignal, BW, Fs, Threshold);
 
@@ -39,3 +47,7 @@ CroppedLoRa = Pluto_Crop(CapturedSignal, BW, Fs, Threshold);
 pwelch(CroppedSignal,256,0,[],par.fs,'centered')
 
 %pwelch(CapturedSignal,256,0,[],par.fs,'centered')
+
+%% Demodulate
+DemodulatedSignal = LoRa_Demodulate(CroppedLoRa,SF,BW)
+
