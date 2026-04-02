@@ -49,6 +49,10 @@ pwelch(CroppedSignal,256,0,[],par.fs,'centered')
 %% Demodulate
 DemodulatedSignal = LoRa_Demodulate(CroppedLoRa,SF,BW);
 
-spectrogram(CroppedSignal, STFT_Window_Cropped, [], [], par.fs, 'yaxis', 'centered');
+spectrogram(DemodulatedSignal, round(length(DemodulatedSignal)/128), [], [], par.fs, 'yaxis', 'centered');
 
-%% 
+%% FSK Demodulate
+DemodulatedSignalFSK = FSK_Demodulate(DemodulatedSignal, SF)
+
+%% Decode
+DecodedSignal = LoRa_Decode(DemodulatedSignalFSK, SF)
