@@ -15,7 +15,7 @@ signalSegment = CapturedSignal(startSignal:endSignal);
 
 fftshift(fft(signalSegment))
 
-pwelch(signalSegment,256,0,[],par.fs,'centered')
+%pwelch(signalSegment,256,0,[],par.fs,'centered')
 
 
 %% Time crop
@@ -38,7 +38,7 @@ grid on
 %% 
 BW = 125e3;           % 125 kHz
 Fs = par.fs;          % SDR sample rate
-Threshold = -30;      % Noise floor
+Threshold = -20;      % Noise floor
 SF = 7;               % Spreading factor
 
 CroppedLoRa = Pluto_Crop(CapturedSignal, BW, Fs, Threshold);
@@ -56,3 +56,4 @@ DemodulatedSignalFSK = FSK_Demodulate(DemodulatedSignal, SF)
 
 %% Decode
 DecodedSignal = LoRa_Decode(DemodulatedSignalFSK, SF)
+cast(DecodedSignal,'char')
